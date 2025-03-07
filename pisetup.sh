@@ -5,15 +5,14 @@
 # ToDo: Test on more Pi models with fresh Raspbian and allow existing src folders to be updated.
 #
 clear
-echo "This script will assist with compiling Super Mario 64 on Raspbian 10"
-echo "Note that accelerated OpenGL (vc4_drm) is required for maximum performance"
+echo "This script will assist with compiling Super Mario 64 on Raspberry Pi's"
 echo "Checking Raspberry Pi model..."
 origdir=$PWD
 lowmem=0
 pi=1
 pimodel=$(uname -m 2>/dev/null || echo unknown)
 pitype=$(tr -d '\0' < /sys/firmware/devicetree/base/model)
-repo_url="https://github.com/sm64pc/sm64ex"
+repo_url="https://github.com/AloUltraExt/sm64ex-alo"
 
 if [[ $pimodel =~ "armv6" ]]
 then
@@ -49,26 +48,6 @@ then
    pi=4;
    lowmem=0;
    exp=1;
-fi
-
-if [[ $exp == 1 ]]
-then
-   echo ""
-   echo "Notice: Due to detected Pi version, compilation and execution of Super Mario 64 (RPi) is experimental."
-   echo "Further steps may be required and software / driver compatibility is not guaranteed."
-   read -p "Continue setup & compilation (Y/N): " exp
-
-	if [[ $exp =~ [Yy] ]]
-	then
-        echo ""
-        else
-	echo "Y not entered. Exiting."
- 	exit
-	fi
-
-   echo "Please report any problems encountered to ${repo_url} issue tracker."
-   echo ""
-   sleep 7
 fi
 
 #//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -255,76 +234,8 @@ sleep 2
 clear
 echo "Super Mario 64 RPi preparation & downloader"
 echo ""
-echo "Checking in current directory and"
-echo "checking in "$HOME"/src/sm64pc/sm64ex/ for existing Super Mario 64 PC files"
-echo ""
 sm64dircur=$(ls ./Makefile)
-sm64dir=$(ls $HOME/src/sm64pc/sm64ex/Makefile)
-
-if [[ $sm64dircur =~ "access" ]]
-then
-echo ""
-sm64dircur=0;
-else
-if [[ $sm64dircur =~ "Makefile" ]] #If current directory has a makefile
-then
-sm64dir=$sm64dircur
-curdir=1; #If current directory has a Makefile or is git zip
-fi
-fi
-
-if [[ $sm64dir =~ "access" ]]
-then
-echo ""
-sm64dir=0;
-curdir=0;
-else
-if [[ $sm64dir =~ "Makefile" ]]
-then
-    echo "Existing Super Mario 64 PC port files found!"
-    echo "Redownload files (fresh compile)?"
-    read -p "Redownload? (Y/N): " sm64git
-
-    if [[ $sm64git =~ "N" ]] # Do NOT redownload, USE current directory for compile
-    then
-    sm64dir=1; # Don't redownload files , use current directory (has sm64 files)
-    curdir=1;
-    fi
-
-else #Do a fresh compile in HOME/src/sm64pc/sm64ex/
-    sm64dir=0;
-    curdir=0;
-fi
-fi
-
-#------------------------------------------------------------------------------
-#------------------------------------------------------------------------------
-echo ""
-if [[ $sm64git =~ [Yy] || $sm64dir == 0 || $curdir == 0 ]]  #If user wants to redownload or NOT git-zip execution
-then
-echo "Step 2. Super Mario 64 PC-Port will now be downloaded from github"
-echo "Current folder will NOT be compiled."
-read -p "Proceed? (Y/N): " gitins
-
-if [[ $gitins =~ [Yy] ]]
-then
-echo ""
-echo "Creating directory "$HOME"/src/sm64pc"
-mkdir $HOME/src/
-cd $HOME/src/
-mkdir $HOME/src/sm64pc
-cd $HOME/src/sm64pc
-
-echo ""
-echo "Downloading latest Super Mario 64 PC-port code"
-git clone ${repo_url}
-cd $HOME/src/sm64pc/sm64ex/
-echo "Download complete"
-echo ""
-sleep 2
-fi #End of downloader
-fi
-sleep 2
+sm64dir=$(ls ./Makefile)
 
 #-------------------------------------------------------------------
 #------------------------------------------------------------------
@@ -338,7 +249,7 @@ if [[ $curdir == 1 ]]
 then
 echo "Assets will be extracted from "$PWD" "
 else
-echo "Assets will be extracted from $HOME/src/sm64pc/sm64ex/baserom.(us/eu/jp).z64 "
+echo "Assets will be extracted from $HOME/src/sm64pc/sm64ex/baserom.us.z64 "
 fi
 
 if [[ $curdir == 1 ]]
@@ -361,15 +272,6 @@ echo "Exiting Super Mario 64 RasPi setup and compilation script."
 echo ""
 echo "Note: Re-run script once baserom(s) are inserted into"
 
-if [[ $curdir == 1 ]]
-then
-echo $PWD
-echo ""
-else
-echo ""
-echo $HOME/src/sm64pc/sm64ex/
-fi
-
 sleep 5
 exit
 
@@ -381,11 +283,6 @@ sleep 3
 clear
 echo ""
 
-if [[ $curdir != 1 ]] # If we're not compiling from a git zip / random directory
-then
-cd $HOME/src/sm64pc/sm64ex/
-fi
-
 echo "Beginning Super Mario 64 RasPi compilation!"
 echo ""
 echo "Warning: Compilation may take up to an hour on weaker hardware"
@@ -393,7 +290,7 @@ echo "At least 300MB of free storage AND RAM is recommended"
 echo ""
 make clean
 sync
-make -j$pi TARGET_RPI=1
+make -j$pi TARGET_RPI=1 BETTERCAMERA=1 BETTERCAMERA=1 EXT_OPTIONS_MENU=1 EXTERNAL_DATA=1 TEXTSAVES=1 QOL_FIXES=1 QOL_FEATURES=1 MOUSE_ACTIONS=1
 sync
 
 
@@ -404,7 +301,7 @@ if [[ $curdir == 1 ]]
 then
 sm64done=$(find $PWD/build/*/* | grep .arm)
 else
-sm64done=$(find $HOME/src/sm64pc/sm64ex/build/*/* | grep .arm)
+sm64done=$(find $HOME/*/build/*/* | grep .arm)
 fi
 
 echo ""
